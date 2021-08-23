@@ -45,10 +45,11 @@ public class ClassHelper {
         }
         Logger.i("addClassName:" + classPath);
         //com.example.test.MainActivity
-        if(list.size()>0&&list.contains(classPath)){
+        String replace = classPath.replace(File.separator, ".").replace("/", ".").replace(".class", "");
+        if(list.size()>0&&list.contains(replace)){
             return;
         }
-        list.add(classPath);
+        list.add(replace);
     }
 
     public List<String> getList() {

@@ -90,7 +90,7 @@ public class AppLifecycleTransform extends Transform {
      */
     @Override
     public boolean isIncremental() {
-        return false;
+        return true;
     }
 
     /**
@@ -103,14 +103,16 @@ public class AppLifecycleTransform extends Transform {
      * @throws InterruptedException
      * @throws IOException
      */
+    private boolean isIncremental;
     @Override
     public void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
         super.transform(transformInvocation);
         long timeStart = System.currentTimeMillis();
         Collection<TransformInput> inputs = transformInvocation.getInputs();
         TransformOutputProvider outputProvider = transformInvocation.getOutputProvider();
-
-        if (!isIncremental()) {
+        isIncremental=transformInvocation.isIncremental();
+        Logger.i("transform:isIncremental:"+isIncremental);
+        if (!isIncremental) {
             outputProvider.deleteAll();
         }
         isCollectClassName=true;
@@ -155,7 +157,8 @@ public class AppLifecycleTransform extends Transform {
         //contentLocation.getAbsolutePath():类似于这种目录：E:\mystudy\my\StudyGradle\app\build\intermediates\transforms\DemoTransform\debug\33
         File contentLocation = outputProvider.getContentLocation(dirItem.getName(), dirItem.getContentTypes(), dirItem.getScopes(), Format.DIRECTORY);
         Logger.i("handleDirectoryInput:contentLocation.getAbsolutePath():" + contentLocation.getAbsolutePath());
-        if (isIncremental()) {
+        if (isIncremental) {
+            /*如果ApplicationLifecycle，AppLifecycle文件更改，AppLifecycleHelper也需要更改，但是AppLifecycleHelper可能不会触发增量编译，所以需要手动在AppLifecycleHelper中插入代码*/
             Map<File, Status> changedFiles = dirItem.getChangedFiles();
             if (changedFiles == null || changedFiles.size() == 0) {
                 return;
@@ -227,7 +230,7 @@ public class AppLifecycleTransform extends Transform {
     }
 
     private void handleFile(File contentLocation, DirectoryInput rootPath, File file, TransformOutputProvider outputProvider) {
-        Logger.i("isIncremental:" + isIncremental() + ",handleFile:getAbsolutePath:" + file.getAbsolutePath());
+        Logger.i("isIncremental:" + isIncremental + ",handleFile:getAbsolutePath:" + file.getAbsolutePath());
         try {
             ClassReader classReader = new ClassReader(new FileInputStream(file));
             ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS);
@@ -235,6 +238,9 @@ public class AppLifecycleTransform extends Transform {
             classReader.accept(visitor, ClassReader.EXPAND_FRAMES);
             byte[] bytes = classWriter.toByteArray();
             File changFileResult = new File(contentLocation, file.getAbsolutePath().substring(rootPath.getFile().getAbsolutePath().length()));
+            if(changFileResult.getParentFile()!=null&&!changFileResult.getParentFile().exists()){
+                changFileResult.getParentFile().mkdirs();
+            }
             FileOutputStream fos = new FileOutputStream(changFileResult);
             fos.write(bytes);
             fos.flush();
@@ -261,13 +267,16 @@ public class AppLifecycleTransform extends Transform {
 
         String md5Name = DigestUtils.md5Hex(jarInputFile.getAbsolutePath());
         //jar名字，比如：androidx.constraintlayout:constraintlayout:1.1.3
+        //如果是module，则是->:AppLifecycle
         String jarName = jarInput.getName();
         if (jarName.toLowerCase().endsWith(".jar")) {
             jarName = jarName.substring(0, jarName.length() - 4);
         }
         //contentLocation.getAbsolutePath()类似于这种具体的文件名：E:\mystudy\my\StudyGradle\app\build\intermediates\transforms\DemoTransform\debug\0.jar
         File contentLocation = outputProvider.getContentLocation(jarName + md5Name, jarInput.getContentTypes(), jarInput.getScopes(), Format.JAR);
-        if (isIncremental()) {
+
+        /*如果ApplicationLifecycle，AppLifecycle文件更改，AppLifecycleHelper也需要更改，但是AppLifecycleHelper可能不会触发增量编译，所以需要每次扫描处理AppLifecycleHelper这个类*/
+        if (isIncremental&&!jarName.contains("AppLifecycle")) {
             Status status = jarInput.getStatus();
 
             switch (status) {

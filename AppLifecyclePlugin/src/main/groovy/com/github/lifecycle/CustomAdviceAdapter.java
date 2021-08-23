@@ -19,8 +19,10 @@ public class CustomAdviceAdapter extends AdviceAdapter {
             return;
         }
         for (String item:list){
-//            mv.visitLdcInsn(item);
-//            mv.visitMethodInsn(INVOKEVIRTUAL, "com/github/applifecycle/AppLifecycleHelper", "addAppLifecycle", "(Ljava/lang/String;)V", false);
+            Logger.i("onMethodEnter:"+item);
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitLdcInsn(item);
+            mv.visitMethodInsn(INVOKEVIRTUAL, "com/github/applifecycle/AppLifecycleHelper", "addAppLifecycle", "(Ljava/lang/String;)V", false);
         }
     }
 

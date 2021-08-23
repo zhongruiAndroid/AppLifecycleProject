@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.text.TextUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,7 +19,6 @@ public class AppLifecycleHelper {
     private static AppLifecycleHelper singleObj;
 
     private AppLifecycleHelper() {
-        isEmpty = false;
     }
 
     public static AppLifecycleHelper get() {
@@ -33,7 +33,6 @@ public class AppLifecycleHelper {
     }
 
     private List<AppLifecycle> appLifecycleList = new ArrayList<>();
-    private boolean isEmpty;
 
     /**********************************************************/
     @Keep
@@ -59,17 +58,25 @@ public class AppLifecycleHelper {
             if (object instanceof AppLifecycle) {
                 addAppLifecycle((AppLifecycle) object);
             }
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }catch (SecurityException e) {
+            e.printStackTrace();
+        }catch (InstantiationException e) {
+            e.printStackTrace();
+        }catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }catch (InvocationTargetException e) {
             e.printStackTrace();
         }
     }
 
     private boolean isEmpty() {
-        if (isEmpty) {
-            return true;
-        }
         if (appLifecycleList == null || appLifecycleList.isEmpty()) {
-            isEmpty = true;
             return true;
         }
         return false;

@@ -2,7 +2,6 @@ package com.zr.applifecycleproject;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDialog;
-import androidx.core.app.DialogCompat;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -33,13 +32,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         AppTest a=new AppTest();
-        App1 app1=new App1();
         a.getPriority();
-        app1.getPriority();
         Set<Object> set=new HashSet<>();
         set.add(new App());
         set.add(new App());
-        set.add(new App1());
-        Log.i("=====","====="+set.size());
     }
 }
