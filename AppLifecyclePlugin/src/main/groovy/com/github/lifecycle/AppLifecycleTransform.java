@@ -12,6 +12,7 @@ import com.android.build.api.transform.TransformInvocation;
 import com.android.build.api.transform.TransformOutputProvider;
 import com.android.build.gradle.internal.pipeline.TransformManager;
 import com.android.utils.FileUtils;
+import com.google.common.collect.ImmutableSet;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.gradle.api.Project;
@@ -79,7 +80,7 @@ public class AppLifecycleTransform extends Transform {
      */
     @Override
     public Set<? super QualifiedContent.Scope> getScopes() {
-        return TransformManager.SCOPE_FULL_PROJECT;
+        return  ImmutableSet.of(QualifiedContent.Scope.PROJECT, QualifiedContent.Scope.SUB_PROJECTS);
     }
 
     /**
@@ -89,7 +90,7 @@ public class AppLifecycleTransform extends Transform {
      */
     @Override
     public boolean isIncremental() {
-        return true;
+        return false;
     }
 
     /**
@@ -105,14 +106,14 @@ public class AppLifecycleTransform extends Transform {
     @Override
     public void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
         super.transform(transformInvocation);
-
+        long timeStart = System.currentTimeMillis();
         Collection<TransformInput> inputs = transformInvocation.getInputs();
         TransformOutputProvider outputProvider = transformInvocation.getOutputProvider();
 
         if (!isIncremental()) {
             outputProvider.deleteAll();
         }
-
+        isCollectClassName=true;
         for (TransformInput item : inputs) {
             Collection<DirectoryInput> directoryInputs = item.getDirectoryInputs();
             if (directoryInputs == null) {
@@ -126,8 +127,23 @@ public class AppLifecycleTransform extends Transform {
                 handleJarInputs(jarItem, outputProvider);
             }
         }
+        isCollectClassName=false;
+        for (TransformInput item : inputs) {
+            Collection<DirectoryInput> directoryInputs = item.getDirectoryInputs();
+            if (directoryInputs == null) {
+                continue;
+            }
+            for (DirectoryInput dirItem : directoryInputs) {
+                handleDirectoryInput(dirItem, outputProvider, transformInvocation);
+            }
+            Collection<JarInput> jarInputs = item.getJarInputs();
+            for (JarInput jarItem : jarInputs) {
+                handleJarInputs(jarItem, outputProvider);
+            }
+        }
+        Logger.i(((System.currentTimeMillis() - timeStart) / 1000f) + "===================");
     }
-
+    private boolean isCollectClassName;
     private void handleDirectoryInput(DirectoryInput dirItem, TransformOutputProvider outputProvider, TransformInvocation transformInvocation) {
         if (dirItem == null) {
             return;
@@ -215,7 +231,7 @@ public class AppLifecycleTransform extends Transform {
         try {
             ClassReader classReader = new ClassReader(new FileInputStream(file));
             ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS);
-            ClassVisitor visitor = task.createClassVisitor(classWriter);
+            ClassVisitor visitor = task.createClassVisitor(classWriter,isCollectClassName);
             classReader.accept(visitor, ClassReader.EXPAND_FRAMES);
             byte[] bytes = classWriter.toByteArray();
             File changFileResult = new File(contentLocation, file.getAbsolutePath().substring(rootPath.getFile().getAbsolutePath().length()));
@@ -295,7 +311,7 @@ public class AppLifecycleTransform extends Transform {
 
                 ClassReader classReader = new ClassReader(inputStream);//IOUtils.toByteArray(inputStream)
                 ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS);
-                ClassVisitor cv = task.createClassVisitor(classWriter);
+                ClassVisitor cv = task.createClassVisitor(classWriter,isCollectClassName);
                 classReader.accept(cv, ClassReader.EXPAND_FRAMES);
                 byte[] code = classWriter.toByteArray();
 

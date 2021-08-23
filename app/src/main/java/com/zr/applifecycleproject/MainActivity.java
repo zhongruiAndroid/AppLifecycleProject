@@ -8,6 +8,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import com.example.test.AppTest;
+
+import java.util.HashSet;
+import java.util.Set;
+
 public class MainActivity extends AppCompatActivity {
 
     private View btShowDialog;
@@ -25,5 +30,16 @@ public class MainActivity extends AppCompatActivity {
                 dialog.show();
             }
         });
+
+
+        AppTest a=new AppTest();
+        App1 app1=new App1();
+        a.getPriority();
+        app1.getPriority();
+        Set<Object> set=new HashSet<>();
+        set.add(new App());
+        set.add(new App());
+        set.add(new App1());
+        Log.i("=====","====="+set.size());
     }
 }

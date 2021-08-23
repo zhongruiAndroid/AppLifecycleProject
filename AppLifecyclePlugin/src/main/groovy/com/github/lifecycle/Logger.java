@@ -7,6 +7,6 @@ public class Logger {
         if(!isDebug){
             return;
         }
-        System.out.println(msg);
+        System.out.println("[log]"+msg);
     }
 }

@@ -1,3 +1,5 @@
 rootProject.name='AppLifecycleProject'
 include ':app'
 include ':AppLifecyclePlugin'
+include ':AppLifecycle'
+include ':TestModule'

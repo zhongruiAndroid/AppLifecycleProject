@@ -5,5 +5,5 @@ import org.objectweb.asm.ClassWriter;
 
 
 public interface CustomTask {
-    ClassVisitor createClassVisitor(ClassWriter classWriter);
+    ClassVisitor createClassVisitor(ClassWriter classWriter,boolean isCollectClassName);
 }
