@@ -3,7 +3,6 @@ package com.github.applifecycle;
 import android.content.Context;
 import android.content.res.Configuration;
 
-import androidx.annotation.NonNull;
 
 public interface AppLifecycle {
     int PRIORITY_0 = 0;
@@ -21,10 +20,15 @@ public interface AppLifecycle {
     int getPriority();
 
     void onCreate(Context context);
+
     void attachBaseContext(Context base);
-    void onConfigurationChanged(@NonNull Configuration newConfig);
+
+    void onConfigurationChanged(Configuration newConfig);
+
     void onLowMemory();
+
     void onTerminate();
+
     void onTrimMemory(int level);
 
 }

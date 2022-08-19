@@ -10,10 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
 
-@Keep
 public class AppLifecycleHelper {
     /**********************************************************/
     private static AppLifecycleHelper singleObj;
@@ -35,7 +32,6 @@ public class AppLifecycleHelper {
     private List<AppLifecycle> appLifecycleList = new ArrayList<>();
 
     /**********************************************************/
-    @Keep
     public void addAppLifecycle(AppLifecycle appLifecycle) {
         if (appLifecycle == null) {
             return;
@@ -48,7 +44,6 @@ public class AppLifecycleHelper {
         appLifecycleList.add(appLifecycle);
     }
 
-    @Keep
     public void addAppLifecycle(String className) {
         if (TextUtils.isEmpty(className)) {
             return;
@@ -82,7 +77,6 @@ public class AppLifecycleHelper {
         return false;
     }
 
-    @Keep
     public void onCreate(Context context) {
         if (isEmpty()) {
             return;
@@ -113,7 +107,7 @@ public class AppLifecycleHelper {
         }
     }
 
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+    public void onConfigurationChanged( Configuration newConfig) {
         if (isEmpty()) {
             return;
         }
